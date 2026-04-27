@@ -1,13 +1,42 @@
 import NextAuth from "next-auth";
 import { authConfig } from "@backend/auth/auth.config";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 // Middleware runs on the Edge runtime. We initialize a separate Auth.js
 // instance from the edge-safe config (no providers that need Node APIs).
 const { auth } = NextAuth(authConfig);
 
-export default auth((request) => {
-  const { nextUrl, auth: session } = request;
+function buildCsp(nonce: string): string {
+  // script-src: 'self' + nonce covers Next.js inline hydration scripts.
+  // style-src: 'unsafe-inline' is required for Tailwind CSS-in-JS at runtime.
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "object-src 'none'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https://lh3.googleusercontent.com",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "manifest-src 'self'",
+    "worker-src 'self' blob:",
+    "upgrade-insecure-requests",
+  ].join("; ");
+}
+
+export default auth((request: NextRequest & { auth: unknown }) => {
+  const { nextUrl } = request;
+  const session = (request as { auth?: { user?: unknown } }).auth;
   const isAuthed = Boolean(session?.user);
+
+  // Generate a fresh nonce for every HTML page response.
+  const nonce = Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString(
+    "base64",
+  );
+  const csp = buildCsp(nonce);
 
   const isPublic =
     nextUrl.pathname === "/signin" ||
@@ -15,8 +44,6 @@ export default auth((request) => {
     nextUrl.pathname.startsWith("/api/auth/");
 
   if (isPublic) {
-    // If already authenticated, bounce off the auth pages back to the
-    // app to avoid showing the form to a logged-in user.
     if (
       isAuthed &&
       (nextUrl.pathname === "/signin" || nextUrl.pathname === "/register")
@@ -25,26 +52,40 @@ export default auth((request) => {
       const url = nextUrl.clone();
       url.pathname = callbackUrl.startsWith("/") ? callbackUrl : "/";
       url.search = "";
-      return Response.redirect(url);
+      const res = NextResponse.redirect(url);
+      res.headers.set("Content-Security-Policy", csp);
+      return res;
     }
-    return undefined;
+    const res = NextResponse.next();
+    res.headers.set("Content-Security-Policy", csp);
+    // Forward nonce to layout.tsx via request header.
+    res.headers.set("x-nonce", nonce);
+    return res;
   }
 
   if (!isAuthed) {
     const url = nextUrl.clone();
     url.pathname = "/signin";
     url.search = `?callbackUrl=${encodeURIComponent(nextUrl.pathname + nextUrl.search)}`;
-    // For API requests, return 401 JSON instead of HTML redirect.
     if (nextUrl.pathname.startsWith("/api/")) {
       return Response.json(
         { error: { code: "UNAUTHORIZED", message: "Authentication required" } },
         { status: 401 },
       );
     }
-    return Response.redirect(url);
+    const res = NextResponse.redirect(url);
+    res.headers.set("Content-Security-Policy", csp);
+    return res;
   }
 
-  return undefined;
+  const res = NextResponse.next({
+    request: {
+      // Pass nonce to server components via a forwarded request header.
+      headers: new Headers({ ...Object.fromEntries(request.headers), "x-nonce": nonce }),
+    },
+  });
+  res.headers.set("Content-Security-Policy", csp);
+  return res;
 });
 
 export const config = {
