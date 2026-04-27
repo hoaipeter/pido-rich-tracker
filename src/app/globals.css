@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Recharts: ensure tooltip/cursor blends with the pink-pastel palette. */
+.recharts-default-tooltip {
+  border-radius: 0.75rem !important;
+  border-color: #fad4e1 !important; /* brand-200 */
+  box-shadow: 0 10px 15px -3px rgb(223 115 150 / 0.12) !important;
+}
+
+.recharts-cartesian-axis-tick text {
+  fill: #763850; /* brand-800 */
+  font-size: 12px;
+}
