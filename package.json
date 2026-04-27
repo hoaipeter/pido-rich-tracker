@@ -55,6 +55,9 @@
     "typescript": "^5.6.3",
     "vitest": "^3"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
       "prettier --write",
