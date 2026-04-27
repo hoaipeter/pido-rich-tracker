@@ -1,0 +1,90 @@
+# Docker Compose stack for Pido Rich Tracker.
+# The database lives on MongoDB Atlas — there is no local mongo service.
+#
+# Usage:
+#   docker compose up --build                  # production-like
+#   docker compose --profile dev up --build    # hot-reload dev container
+#
+# Requires .env with at least:
+#   MONGODB_URI, MONGODB_DB, AUTH_SECRET, AUTH_URL, AUTH_ALLOWED_EMAILS
+# See .env.example for the full list.
+
+x-app-defaults: &app-defaults
+  env_file:
+    - .env
+  ports:
+    # Bind to loopback only so the container is not exposed on LAN/Wi-Fi
+    # by default. Use a reverse proxy (Traefik, nginx, Caddy) to publish.
+    - "127.0.0.1:3000:3000"
+  init: true # forwards SIGTERM, reaps zombies (PID1)
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "5"
+
+services:
+  app:
+    <<: *app-defaults
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 20.18-alpine
+    image: pido-rich-tracker:latest
+    container_name: pido-app
+    restart: unless-stopped
+    # Production runner ships a baked standalone bundle and writes nothing
+    # to disk at runtime. /tmp is provided as tmpfs for any transient files.
+    read_only: true
+    tmpfs:
+      - /tmp:rw,size=64m,mode=1777
+    environment:
+      NODE_ENV: production
+      MONGODB_DB: ${MONGODB_DB:-pido_tracker}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:3000/',r=>{process.exit(r.st\
+            atusCode<500?0:1)}).on('error',()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+          pids: 256
+        reservations:
+          memory: 256M
+
+  app-dev:
+    <<: *app-defaults
+    profiles: [ "dev" ]
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      args:
+        NODE_VERSION: 20.18-alpine
+    container_name: pido-app-dev
+    # Dev container needs a writable FS for `next dev` cache + HMR artifacts.
+    read_only: false
+    environment:
+      NODE_ENV: development
+      MONGODB_DB: ${MONGODB_DB:-pido_tracker}
+    volumes:
+      # Bind-mount source for HMR; keep container's node_modules + .next
+      # isolated so host platform differences (Win/macOS) don't break installs.
+      - .:/app
+      - /app/node_modules
+      - /app/.next
