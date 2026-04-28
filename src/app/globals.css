@@ -27,3 +27,29 @@ body {
   fill: #763850; /* brand-800 */
   font-size: 12px;
 }
+
+/* ── Custom scrollbar (WebKit: Chrome, Edge, Safari) ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fff7fa; /* brand-50 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f5b3ca; /* brand-300 */
+  border-radius: 9999px;
+  border: 2px solid #fff7fa;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #df7396; /* brand-500 */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #f5b3ca #fff7fa; /* thumb track */
+}
