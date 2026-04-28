@@ -8,15 +8,22 @@ import type { NextRequest } from "next/server";
 const { auth } = NextAuth(authConfig);
 
 function buildCsp(nonce: string): string {
-  // script-src: 'self' + nonce covers Next.js inline hydration scripts.
-  // style-src: 'unsafe-inline' is required for Tailwind CSS-in-JS at runtime.
+  // In development, Next.js Fast Refresh (HMR) uses eval() inside
+  // react-refresh-utils. 'unsafe-eval' is only added in dev; production
+  // builds never use eval so the strict policy applies there.
+  const isDev = process.env.NODE_ENV === "development";
+  const scriptSrc = isDev
+    ? `script-src 'self' 'nonce-${nonce}' 'unsafe-eval'`
+    : `script-src 'self' 'nonce-${nonce}'`;
+
+  // style-src: 'unsafe-inline' is required for Tailwind at runtime.
   return [
     "default-src 'self'",
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
     "object-src 'none'",
-    `script-src 'self' 'nonce-${nonce}'`,
+    scriptSrc,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://lh3.googleusercontent.com",
     "font-src 'self' data:",
