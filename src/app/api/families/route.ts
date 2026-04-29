@@ -4,6 +4,7 @@ import { auth } from "@backend/auth/auth";
 import { UnauthorizedError } from "@backend/auth/session";
 import { badRequest, created, ok, withErrorHandler } from "@backend/http/api-response";
 import { familyService } from "@backend/modules/families/family.service";
+import { userRepository } from "@backend/modules/users/user.repository";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,10 +21,14 @@ export const GET = withErrorHandler(async () => {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) throw new UnauthorizedError();
-  const families = await familyService.listForUser(userId);
+
+  const [families, userDoc] = await Promise.all([
+    familyService.listForUser(userId),
+    userRepository.findById(userId),
+  ]);
   return ok({
     families,
-    activeFamilyId: session.user.activeFamilyId ?? null,
+    activeFamilyId: userDoc?.activeFamilyId ?? null,
   });
 });
 

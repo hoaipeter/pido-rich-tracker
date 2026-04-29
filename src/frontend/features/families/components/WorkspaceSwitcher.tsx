@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useFamilies, useSetActiveFamily } from "../hooks";
 import { cn } from "@frontend/lib/cn";
@@ -12,7 +11,6 @@ import { cn } from "@frontend/lib/cn";
  * a query-cache wipe (data is family-scoped).
  */
 export function WorkspaceSwitcher() {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { data, isLoading } = useFamilies();
@@ -42,7 +40,7 @@ export function WorkspaceSwitcher() {
   }, [open]);
 
   if (isLoading || !data) {
-    return <div className="h-8 w-32 animate-pulse rounded-md bg-brand-100" aria-hidden />;
+    return <div className="bg-brand-100 h-8 w-32 animate-pulse rounded-md" aria-hidden />;
   }
 
   const active = data.families.find((f) => f.id === data.activeFamilyId);
@@ -53,14 +51,14 @@ export function WorkspaceSwitcher() {
         type="button"
         onClick={() => setOpen((value) => !value)}
         className={cn(
-          "flex max-w-[14rem] items-center gap-2 rounded-md border border-brand-200 bg-white px-3 py-1.5 text-sm text-brand-800 shadow-sm transition hover:bg-brand-50",
+          "border-brand-200 text-brand-800 hover:bg-brand-50 flex max-w-[14rem] items-center gap-2 rounded-md border bg-white px-3 py-1.5 text-sm shadow-sm transition",
         )}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Switch workspace"
       >
         <span
-          className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-brand-500 text-[10px] font-semibold text-white"
+          className="bg-brand-500 flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-semibold text-white"
           aria-hidden
         >
           {(active?.name ?? "?").trim().charAt(0).toUpperCase()}
@@ -72,7 +70,7 @@ export function WorkspaceSwitcher() {
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
-          className="h-3.5 w-3.5 text-brand-500"
+          className="text-brand-500 h-3.5 w-3.5"
           aria-hidden
         >
           <path d="m6 9 6 6 6-6" />
@@ -81,9 +79,9 @@ export function WorkspaceSwitcher() {
       {open ? (
         <div
           role="menu"
-          className="absolute right-0 z-40 mt-2 w-64 rounded-lg border border-brand-100 bg-white p-1 shadow-lg"
+          className="border-brand-100 absolute right-0 z-40 mt-2 w-64 rounded-lg border bg-white p-1 shadow-lg"
         >
-          <div className="px-3 py-2 text-xs uppercase tracking-wide text-brand-500">
+          <div className="text-brand-500 px-3 py-2 text-xs tracking-wide uppercase">
             Workspaces
           </div>
           <ul className="max-h-64 overflow-auto">
@@ -93,24 +91,24 @@ export function WorkspaceSwitcher() {
                 <li key={family.id}>
                   <button
                     type="button"
+                    disabled={setActive.isPending}
                     onClick={() => {
                       setOpen(false);
                       if (isActive) return;
-                      setActive.mutate(family.id, {
-                        onSuccess: () => router.refresh(),
-                      });
+                      setActive.mutate(family.id);
                     }}
                     className={cn(
                       "flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition",
                       isActive
                         ? "bg-emerald-50 text-emerald-700"
                         : "text-brand-800 hover:bg-brand-50",
+                      setActive.isPending && !isActive && "cursor-wait opacity-50",
                     )}
                     role="menuitemradio"
                     aria-checked={isActive}
                   >
                     <span className="truncate">{family.name}</span>
-                    <span className="ml-2 text-xs uppercase text-brand-500">
+                    <span className="text-brand-500 ml-2 text-xs uppercase">
                       {family.role}
                     </span>
                   </button>
@@ -118,11 +116,11 @@ export function WorkspaceSwitcher() {
               );
             })}
           </ul>
-          <div className="my-1 h-px bg-brand-100" />
+          <div className="bg-brand-100 my-1 h-px" />
           <Link
             href="/families"
             onClick={() => setOpen(false)}
-            className="block rounded-md px-3 py-2 text-sm text-brand-800 transition hover:bg-brand-50"
+            className="text-brand-800 hover:bg-brand-50 block rounded-md px-3 py-2 text-sm transition"
             role="menuitem"
           >
             Manage workspaces…

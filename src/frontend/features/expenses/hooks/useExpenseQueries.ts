@@ -3,6 +3,7 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { expensesApi } from "../api-client";
 import type { Expense, ExpenseFilters } from "@shared/expenses/schemas";
+import { STALE } from "@frontend/lib/queryConstants";
 
 /**
  * React Query keys are namespaced by feature. The factory keeps cache keys
@@ -18,7 +19,7 @@ export function useExpenses(filters?: ExpenseFilters): UseQueryResult<Expense[],
   return useQuery({
     queryKey: expenseKeys.list(filters),
     queryFn: () => expensesApi.list(filters),
-    staleTime: 30_000,
+    staleTime: STALE.DEFAULT,
     placeholderData: (previous) => previous,
   });
 }

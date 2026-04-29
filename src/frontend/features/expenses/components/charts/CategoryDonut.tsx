@@ -84,7 +84,7 @@ export function CategoryDonut({ data }: Props) {
   }
 
   return (
-    <div className="relative h-72 w-full animate-fade-in">
+    <div className="animate-fade-in relative h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <defs>
@@ -112,7 +112,6 @@ export function CategoryDonut({ data }: Props) {
             cornerRadius={6}
             stroke="white"
             strokeWidth={2}
-            activeIndex={activeIndex}
             activeShape={ActiveSlice}
             onMouseEnter={(_, idx) => setActiveIndex(idx)}
             onMouseLeave={() => setActiveIndex(undefined)}
@@ -128,13 +127,11 @@ export function CategoryDonut({ data }: Props) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number, _name, payload) => {
+            formatter={(value, _name, payload) => {
+              const v = typeof value === "number" ? value : Number(value);
               const percent =
                 (payload?.payload as CategoryTotal | undefined)?.percent ?? 0;
-              return [
-                `${formatCurrency(value)} (${formatPercent(percent, 0)})`,
-                "Amount",
-              ];
+              return [`${formatCurrency(v)} (${formatPercent(percent, 0)})`, "Amount"];
             }}
           />
           <Legend
@@ -148,14 +145,14 @@ export function CategoryDonut({ data }: Props) {
 
       {/* Center label */}
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-9 text-center">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-500/80">
+        <span className="text-brand-500/80 text-[10px] font-semibold tracking-[0.18em] uppercase">
           {active ? active.category : "Total"}
         </span>
-        <span className="mt-0.5 text-xl font-bold text-brand-800">
+        <span className="text-brand-800 mt-0.5 text-xl font-bold">
           {formatCompactCurrency(active ? active.amount : total)}
         </span>
         {active && (
-          <span className="text-[11px] font-medium text-brand-500">
+          <span className="text-brand-500 text-[11px] font-medium">
             {formatPercent(active.percent, 0)}
           </span>
         )}

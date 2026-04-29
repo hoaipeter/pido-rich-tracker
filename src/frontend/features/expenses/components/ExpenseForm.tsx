@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Spinner } from "@frontend/components/ui/Spinner";
 import { ErrorBanner } from "@frontend/components/ui/ErrorBanner";
 import { useCreateExpense } from "../hooks/useExpenseMutations";
@@ -32,7 +33,7 @@ export function ExpenseForm({ onSubmitted, autoFocus = false, compact = false }:
     reset,
     setFocus,
     formState: { errors, isSubmitting },
-  } = useForm<NewExpense>({
+  } = useForm<z.input<typeof newExpenseSchema>, unknown, NewExpense>({
     resolver: zodResolver(newExpenseSchema),
     defaultValues: {
       category: "Food",
@@ -56,6 +57,7 @@ export function ExpenseForm({ onSubmitted, autoFocus = false, compact = false }:
     if (autoFocus) setFocus("amount");
   }, [autoFocus, reset, setFocus]);
 
+  // eslint-disable-next-line react-hooks/refs
   const onSubmit = handleSubmit(async (input) => {
     await createExpense.mutateAsync(input);
     reset({
@@ -81,7 +83,7 @@ export function ExpenseForm({ onSubmitted, autoFocus = false, compact = false }:
         <div>
           <label
             htmlFor="category"
-            className="block text-sm font-semibold text-brand-800"
+            className="text-brand-800 block text-sm font-semibold"
           >
             Category
           </label>
@@ -96,7 +98,7 @@ export function ExpenseForm({ onSubmitted, autoFocus = false, compact = false }:
         </div>
 
         <div>
-          <label htmlFor="date" className="block text-sm font-semibold text-brand-800">
+          <label htmlFor="date" className="text-brand-800 block text-sm font-semibold">
             Date
           </label>
           <input id="date" type="date" className={fieldClass} {...register("date")} />
@@ -104,7 +106,7 @@ export function ExpenseForm({ onSubmitted, autoFocus = false, compact = false }:
         </div>
 
         <div>
-          <label htmlFor="amount" className="block text-sm font-semibold text-brand-800">
+          <label htmlFor="amount" className="text-brand-800 block text-sm font-semibold">
             Amount
           </label>
           <input
@@ -125,7 +127,7 @@ export function ExpenseForm({ onSubmitted, autoFocus = false, compact = false }:
         </div>
 
         <div>
-          <label htmlFor="note" className="block text-sm font-semibold text-brand-800">
+          <label htmlFor="note" className="text-brand-800 block text-sm font-semibold">
             Note <span className="text-brand-400">(optional)</span>
           </label>
           <input
@@ -151,7 +153,7 @@ export function ExpenseForm({ onSubmitted, autoFocus = false, compact = false }:
         <button
           type="submit"
           disabled={isSubmitting || createExpense.isPending}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-brand-400 via-brand-500 to-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_6px_18px_-8px_rgba(223,115,150,0.55)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-10px_rgba(223,115,150,0.65)] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+          className="from-brand-400 via-brand-500 to-brand-600 focus-visible:ring-brand-500 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br px-5 py-2.5 text-sm font-semibold text-white shadow-[0_6px_18px_-8px_rgba(223,115,150,0.55)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-10px_rgba(223,115,150,0.65)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
         >
           {(isSubmitting || createExpense.isPending) && (
             <Spinner className="text-white" />

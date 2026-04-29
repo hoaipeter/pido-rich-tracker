@@ -28,6 +28,7 @@ export function ImportDialog({ open, onClose }: Props) {
   // between sessions.
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilename(null);
     setParsed(null);
     setErrors([]);
@@ -88,8 +89,8 @@ export function ImportDialog({ open, onClose }: Props) {
         }}
       />
       <div className="relative z-10 w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-semibold text-brand-800">Import expenses</h2>
-        <p className="mt-1 text-sm text-brand-600">
+        <h2 className="text-brand-800 text-lg font-semibold">Import expenses</h2>
+        <p className="text-brand-600 mt-1 text-sm">
           Upload a CSV with columns <code>category,date,amount,note</code>. Rows that fail
           validation are skipped.
         </p>
@@ -103,16 +104,16 @@ export function ImportDialog({ open, onClose }: Props) {
               const file = event.target.files?.[0];
               if (file) void handleFile(file);
             }}
-            className="block w-full text-sm text-brand-700 file:mr-3 file:rounded-md file:border-0 file:bg-brand-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-200"
+            className="text-brand-700 file:bg-brand-100 file:text-brand-700 hover:file:bg-brand-200 block w-full text-sm file:mr-3 file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm file:font-medium"
           />
           {filename && (
-            <p className="mt-2 text-xs text-brand-500">Selected: {filename}</p>
+            <p className="text-brand-500 mt-2 text-xs">Selected: {filename}</p>
           )}
         </div>
 
         {summary && (
-          <div className="mt-4 rounded-lg border border-brand-100 bg-brand-50/60 p-3 text-sm">
-            <p className="font-medium text-brand-800">
+          <div className="border-brand-100 bg-brand-50/60 mt-4 rounded-lg border p-3 text-sm">
+            <p className="text-brand-800 font-medium">
               {summary.validCount} valid row{summary.validCount === 1 ? "" : "s"}
               {summary.errorCount > 0 ? ` · ${summary.errorCount} skipped` : ""}
             </p>
@@ -136,7 +137,7 @@ export function ImportDialog({ open, onClose }: Props) {
             type="button"
             onClick={onClose}
             disabled={bulkCreate.isPending}
-            className="rounded-md px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-50 disabled:opacity-50"
+            className="text-brand-700 hover:bg-brand-50 rounded-md px-3 py-1.5 text-sm font-medium disabled:opacity-50"
           >
             Cancel
           </button>
@@ -144,7 +145,7 @@ export function ImportDialog({ open, onClose }: Props) {
             type="button"
             onClick={handleConfirm}
             disabled={!parsed || parsed.length === 0 || bulkCreate.isPending}
-            className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="bg-brand-600 hover:bg-brand-700 inline-flex items-center gap-2 rounded-md px-4 py-1.5 text-sm font-semibold text-white shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
           >
             {bulkCreate.isPending && <Spinner className="h-4 w-4" />}
             Import {parsed && parsed.length > 0 ? `(${parsed.length})` : ""}

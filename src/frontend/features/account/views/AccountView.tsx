@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useConfirm } from "@frontend/components/ui/ConfirmDialog";
 import { ErrorBanner } from "@frontend/components/ui/ErrorBanner";
@@ -18,27 +18,25 @@ export function AccountView() {
   const [name, setName] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
 
-  // Seed the input once the session loads (one-shot, then user-controlled).
-  useEffect(() => {
-    if (session?.user?.name && name === "") {
-      setName(session.user.name);
-    }
-    // Intentionally only on initial session arrival; subsequent edits
-    // by the user must not be clobbered by a session refetch.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.name]);
+  // Seed the name input once the session arrives (one-shot, then
+  // user-controlled). Using setState-during-render so no effect is needed.
+  const [seeded, setSeeded] = useState(false);
+  if (!seeded && session?.user?.name) {
+    setSeeded(true);
+    setName(session.user.name);
+  }
 
   if (status === "loading") {
     return (
       <main className="mx-auto max-w-2xl px-4 py-8">
-        <p className="text-sm text-brand-500">Loading…</p>
+        <p className="text-brand-500 text-sm">Loading…</p>
       </main>
     );
   }
   if (!session?.user) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-8">
-        <p className="text-sm text-brand-600">
+        <p className="text-brand-600 text-sm">
           You need to be signed in.{" "}
           <Link href="/signin" className="text-brand-700 underline">
             Sign in
@@ -54,16 +52,16 @@ export function AccountView() {
   return (
     <main className="mx-auto max-w-2xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       <header>
-        <p className="text-xs uppercase tracking-wide text-brand-500">Account</p>
-        <h1 className="mt-1 text-2xl font-semibold text-brand-900">Your profile</h1>
-        <p className="mt-1 text-sm text-brand-600">
+        <p className="text-brand-500 text-xs tracking-wide uppercase">Account</p>
+        <h1 className="text-brand-900 mt-1 text-2xl font-semibold">Your profile</h1>
+        <p className="text-brand-600 mt-1 text-sm">
           Signed in as <span className="font-medium">{session.user.email}</span>.
         </p>
       </header>
 
-      <section className="rounded-lg border border-brand-100 bg-white p-4">
-        <h2 className="text-sm font-semibold text-brand-800">Display name</h2>
-        <p className="mt-1 text-xs text-brand-500">
+      <section className="border-brand-100 rounded-lg border bg-white p-4">
+        <h2 className="text-brand-800 text-sm font-semibold">Display name</h2>
+        <p className="text-brand-500 mt-1 text-xs">
           Shown to other members of your workspaces. Email cannot be changed.
         </p>
         <form
@@ -80,13 +78,13 @@ export function AccountView() {
             onChange={(event) => setName(event.target.value)}
             maxLength={80}
             placeholder="Your name"
-            className="flex-1 rounded-md border border-brand-200 bg-white px-3 py-2 text-sm text-brand-900 focus:border-brand-400 focus:outline-none"
+            className="border-brand-200 text-brand-900 focus:border-brand-400 flex-1 rounded-md border bg-white px-3 py-2 text-sm focus:outline-none"
             aria-label="Display name"
           />
           <button
             type="submit"
             disabled={!dirty || updateName.isPending}
-            className="rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-700 disabled:opacity-60"
+            className="bg-brand-600 hover:bg-brand-700 rounded-md px-4 py-2 text-sm font-medium text-white transition disabled:opacity-60"
           >
             {updateName.isPending ? "Saving…" : "Save"}
           </button>
@@ -95,7 +93,7 @@ export function AccountView() {
           <ErrorBanner error={updateName.error} clearOn={updateName.data} />
         ) : null}
         {updateName.isSuccess && !dirty ? (
-          <p className="mt-2 text-xs text-brand-500">Name updated.</p>
+          <p className="text-brand-500 mt-2 text-xs">Name updated.</p>
         ) : null}
       </section>
 

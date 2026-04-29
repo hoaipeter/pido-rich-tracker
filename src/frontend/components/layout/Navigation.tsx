@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BrandLogo } from "@frontend/components/brand/BrandLogo";
 import { UserMenu } from "@frontend/features/auth/components/UserMenu";
 import { WorkspaceSwitcher } from "@frontend/features/families/components/WorkspaceSwitcher";
@@ -24,11 +24,12 @@ function isActive(pathname: string | null, href: string): boolean {
 
 export function Navigation() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  // Derive open from which pathname the menu was opened on. When the user
+  // navigates to a new route, open becomes false automatically — no effect
+  // needed.
+  const [openForPathname, setOpenForPathname] = useState<string | null>(null);
+  const open = openForPathname === pathname;
+  const setOpen = (val: boolean) => setOpenForPathname(val ? pathname : null);
 
   // Auth pages render their own focused chrome — keep navigation chromeless
   // so users aren't tempted to navigate away mid-flow. The /invite landing
@@ -43,12 +44,12 @@ export function Navigation() {
 
   if (onAuthRoute) {
     return (
-      <header className="sticky top-0 z-30 border-b border-brand-100 bg-white/80 backdrop-blur">
+      <header className="border-brand-100 sticky top-0 z-30 border-b bg-white/80 backdrop-blur">
         <nav className="mx-auto flex max-w-6xl items-center px-4 py-3 sm:px-6 lg:px-8">
           <Link
             href="/"
             aria-label="Pido — home"
-            className="group flex items-center rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+            className="group focus-visible:ring-brand-400 flex items-center rounded-md focus:outline-none focus-visible:ring-2"
           >
             <BrandLogo variant="wordmark" />
           </Link>
@@ -58,14 +59,14 @@ export function Navigation() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-100 bg-white/80 backdrop-blur">
+    <header className="border-brand-100 sticky top-0 z-30 border-b bg-white/80 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link
           href="/"
           aria-label="Pido — home"
-          className="group flex items-center rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+          className="group focus-visible:ring-brand-400 flex items-center rounded-md focus:outline-none focus-visible:ring-2"
         >
-          <span className="transition-transform duration-300 group-hover:rotate-[-6deg] group-hover:scale-105">
+          <span className="transition-transform duration-300 group-hover:scale-105 group-hover:rotate-[-6deg]">
             <BrandLogo variant="wordmark" />
           </span>
         </Link>
@@ -102,7 +103,7 @@ export function Navigation() {
 
           <button
             type="button"
-            onClick={() => setOpen((value) => !value)}
+            onClick={() => setOpen(!open)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 md:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"

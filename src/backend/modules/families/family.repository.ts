@@ -1,5 +1,6 @@
 import { ObjectId, type Collection } from "mongodb";
 import { getDb } from "@backend/config/mongodb";
+import { toObjectId, timestamps } from "@backend/db/utils";
 import type { Family } from "@shared/families/schemas";
 
 /**
@@ -48,22 +49,21 @@ export interface CreateFamilyInput {
 export const familyRepository = {
   async create(input: CreateFamilyInput): Promise<Family> {
     const collection = await getCollection();
-    const now = new Date();
     const doc: Omit<FamilyDocument, "_id"> = {
       name: input.name,
       ownerId: input.ownerId,
       membershipVersion: 1,
-      createdAt: now,
-      updatedAt: now,
+      ...timestamps(),
     };
     const result = await collection.insertOne(doc as FamilyDocument);
     return toFamily({ ...doc, _id: result.insertedId });
   },
 
   async findById(id: string): Promise<Family | null> {
-    if (!ObjectId.isValid(id)) return null;
+    const oid = toObjectId(id);
+    if (!oid) return null;
     const collection = await getCollection();
-    const doc = await collection.findOne({ _id: new ObjectId(id) });
+    const doc = await collection.findOne({ _id: oid });
     return doc ? toFamily(doc) : null;
   },
 
@@ -78,10 +78,11 @@ export const familyRepository = {
   },
 
   async rename(id: string, name: string): Promise<Family | null> {
-    if (!ObjectId.isValid(id)) return null;
+    const oid = toObjectId(id);
+    if (!oid) return null;
     const collection = await getCollection();
     const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(id) },
+      { _id: oid },
       { $set: { name, updatedAt: new Date() } },
       { returnDocument: "after" },
     );
@@ -89,10 +90,11 @@ export const familyRepository = {
   },
 
   async setOwner(id: string, ownerId: string): Promise<void> {
-    if (!ObjectId.isValid(id)) return;
+    const oid = toObjectId(id);
+    if (!oid) return;
     const collection = await getCollection();
     await collection.updateOne(
-      { _id: new ObjectId(id) },
+      { _id: oid },
       { $set: { ownerId, updatedAt: new Date() } },
     );
   },
@@ -106,10 +108,11 @@ export const familyRepository = {
 
   /** Atomically bump `membershipVersion` on a roster shape change. */
   async bumpMembershipVersion(id: string): Promise<number> {
-    if (!ObjectId.isValid(id)) return 0;
+    const oid = toObjectId(id);
+    if (!oid) return 0;
     const collection = await getCollection();
     const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(id) },
+      { _id: oid },
       { $inc: { membershipVersion: 1 }, $set: { updatedAt: new Date() } },
       { returnDocument: "after" },
     );
@@ -117,9 +120,10 @@ export const familyRepository = {
   },
 
   async delete(id: string): Promise<boolean> {
-    if (!ObjectId.isValid(id)) return false;
+    const oid = toObjectId(id);
+    if (!oid) return false;
     const collection = await getCollection();
-    const result = await collection.deleteOne({ _id: new ObjectId(id) });
+    const result = await collection.deleteOne({ _id: oid });
     return result.deletedCount === 1;
   },
 };

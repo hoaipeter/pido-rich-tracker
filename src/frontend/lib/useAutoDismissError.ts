@@ -46,6 +46,7 @@ export function useAutoDismissError(
   // Clear when an external success signal fires.
   useEffect(() => {
     if (clearOn !== undefined && clearOn !== null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisibleError(null);
       lastSeenRef.current = null;
     }

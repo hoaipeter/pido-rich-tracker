@@ -1,5 +1,6 @@
 import { ObjectId, type Collection } from "mongodb";
 import { getDb } from "@backend/config/mongodb";
+import { toObjectId } from "@backend/db/utils";
 import type { FamilyInvite, InviteStatus } from "@shared/families/schemas";
 
 /**
@@ -108,11 +109,12 @@ export const inviteRepository = {
     inviteId: string,
     acceptedBy: string,
   ): Promise<FamilyInviteDocument | null> {
-    if (!ObjectId.isValid(inviteId)) return null;
+    const oid = toObjectId(inviteId);
+    if (!oid) return null;
     const collection = await getCollection();
     const result = await collection.findOneAndUpdate(
       {
-        _id: new ObjectId(inviteId),
+        _id: oid,
         status: "open",
         expiresAt: { $gt: new Date() },
       },
@@ -130,12 +132,10 @@ export const inviteRepository = {
 
   /** Hard-delete an invite scoped to a family. Returns true if removed. */
   async deleteOne(inviteId: string, familyId: string): Promise<boolean> {
-    if (!ObjectId.isValid(inviteId)) return false;
+    const oid = toObjectId(inviteId);
+    if (!oid) return false;
     const collection = await getCollection();
-    const result = await collection.deleteOne({
-      _id: new ObjectId(inviteId),
-      familyId,
-    });
+    const result = await collection.deleteOne({ _id: oid, familyId });
     return result.deletedCount === 1;
   },
 

@@ -1,5 +1,6 @@
 import { ObjectId, type Collection, type Filter } from "mongodb";
 import { getDb } from "@backend/config/mongodb";
+import { toObjectId, timestamps } from "@backend/db/utils";
 import type {
   Expense,
   ExpenseCategory,
@@ -112,7 +113,6 @@ export const expenseRepository = {
 
   async create(familyId: string, createdBy: string, input: NewExpense): Promise<Expense> {
     const collection = await getCollection();
-    const now = new Date();
     const doc: Omit<ExpenseDocument, "_id"> = {
       familyId,
       createdBy,
@@ -120,8 +120,7 @@ export const expenseRepository = {
       date: input.date,
       amount: input.amount,
       note: input.note ?? null,
-      createdAt: now,
-      updatedAt: now,
+      ...timestamps(),
     };
     const result = await collection.insertOne(doc as ExpenseDocument);
     return toExpense({ ...doc, _id: result.insertedId });
@@ -134,7 +133,7 @@ export const expenseRepository = {
   ): Promise<Expense[]> {
     if (inputs.length === 0) return [];
     const collection = await getCollection();
-    const now = new Date();
+    const ts = timestamps();
     const docs: Omit<ExpenseDocument, "_id">[] = inputs.map((input) => ({
       familyId,
       createdBy,
@@ -142,8 +141,8 @@ export const expenseRepository = {
       date: input.date,
       amount: input.amount,
       note: input.note ?? null,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: ts.createdAt,
+      updatedAt: ts.updatedAt,
     }));
     const result = await collection.insertMany(docs as ExpenseDocument[], {
       ordered: false,
@@ -158,13 +157,10 @@ export const expenseRepository = {
   },
 
   async delete(familyId: string, id: string): Promise<boolean> {
-    if (!ObjectId.isValid(id)) return false;
+    const oid = toObjectId(id);
+    if (!oid) return false;
     const collection = await getCollection();
-    // Compound filter prevents cross-family IDOR (returns deletedCount=0).
-    const result = await collection.deleteOne({
-      _id: new ObjectId(id),
-      familyId,
-    });
+    const result = await collection.deleteOne({ _id: oid, familyId });
     return result.deletedCount === 1;
   },
 

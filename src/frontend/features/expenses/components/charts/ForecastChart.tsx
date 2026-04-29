@@ -86,7 +86,7 @@ export function ForecastChart({ history, forecast }: Props) {
   }
 
   return (
-    <div className="h-72 w-full animate-fade-in">
+    <div className="animate-fade-in h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
@@ -111,16 +111,20 @@ export function ForecastChart({ history, forecast }: Props) {
           />
           <Tooltip
             cursor={{ stroke: "#df7396", strokeOpacity: 0.2 }}
-            formatter={(value: unknown, name: string) => {
+            formatter={(value, name) => {
               if (Array.isArray(value)) {
                 const [low, high] = value as [number, number];
                 return [
-                  `${formatCurrency(low)} – ${formatCurrency(high)}`,
+                  `${formatCurrency(low)} \u2013 ${formatCurrency(high)}`,
                   "Likely range",
                 ];
               }
               const label =
-                name === "actual" ? "Actual" : name === "forecast" ? "Projected" : name;
+                name === "actual"
+                  ? "Actual"
+                  : name === "forecast"
+                    ? "Projected"
+                    : String(name ?? "");
               return [formatCurrency(Number(value)), label];
             }}
           />

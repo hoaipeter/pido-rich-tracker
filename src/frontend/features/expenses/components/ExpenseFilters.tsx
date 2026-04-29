@@ -70,9 +70,11 @@ export function ExpenseFilters() {
 
   // Debounce the search input so we don't flood the URL/API on every keystroke.
   const [searchDraft, setSearchDraft] = useState(filters.search ?? "");
-  useEffect(() => {
+  const [prevSearch, setPrevSearch] = useState(filters.search ?? "");
+  if (prevSearch !== (filters.search ?? "")) {
+    setPrevSearch(filters.search ?? "");
     setSearchDraft(filters.search ?? "");
-  }, [filters.search]);
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -142,7 +144,7 @@ export function ExpenseFilters() {
               strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-slate-400"
               aria-hidden="true"
             >
               <circle cx="11" cy="11" r="8" />

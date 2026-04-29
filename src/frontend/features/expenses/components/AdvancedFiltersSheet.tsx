@@ -36,9 +36,11 @@ export function AdvancedFiltersSheet({
 }: AdvancedFiltersSheetProps) {
   // Debounce the search input so we don't flood the URL on every keystroke.
   const [searchDraft, setSearchDraft] = useState(filters.search ?? "");
-  useEffect(() => {
+  const [prevSearch, setPrevSearch] = useState(filters.search ?? "");
+  if (prevSearch !== (filters.search ?? "")) {
+    setPrevSearch(filters.search ?? "");
     setSearchDraft(filters.search ?? "");
-  }, [filters.search]);
+  }
   useEffect(() => {
     if (!open) return;
     const timer = window.setTimeout(() => {
@@ -77,6 +79,7 @@ export function AdvancedFiltersSheet({
   // wrapper would otherwise clip this sheet to that wrapper's box).
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
   if (!mounted) return null;
@@ -87,7 +90,7 @@ export function AdvancedFiltersSheet({
         aria-hidden="true"
         onClick={onClose}
         className={cn(
-          "fixed inset-0 z-40 bg-brand-900/30 backdrop-blur-sm transition-opacity",
+          "bg-brand-900/30 fixed inset-0 z-40 backdrop-blur-sm transition-opacity",
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
@@ -96,14 +99,14 @@ export function AdvancedFiltersSheet({
         aria-label="Advanced filters"
         aria-hidden={!open}
         className={cn(
-          "fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-brand-200 bg-white shadow-2xl transition-transform duration-200",
+          "border-brand-200 fixed top-0 right-0 z-50 flex h-full w-full max-w-md flex-col border-l bg-white shadow-2xl transition-transform duration-200",
           open ? "translate-x-0" : "translate-x-full",
         )}
       >
-        <header className="flex items-center justify-between border-b border-brand-100 px-5 py-4">
+        <header className="border-brand-100 flex items-center justify-between border-b px-5 py-4">
           <div>
-            <h2 className="text-base font-semibold text-brand-900">Advanced filters</h2>
-            <p className="text-xs text-brand-700">
+            <h2 className="text-brand-900 text-base font-semibold">Advanced filters</h2>
+            <p className="text-brand-700 text-xs">
               {activeCount > 0 ? `${activeCount} active` : "All filters cleared"}
             </p>
           </div>
@@ -111,7 +114,7 @@ export function AdvancedFiltersSheet({
             type="button"
             onClick={onClose}
             aria-label="Close filters"
-            className="rounded-md p-1.5 text-brand-700 transition hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+            className="text-brand-700 hover:bg-brand-50 focus-visible:ring-brand-400 rounded-md p-1.5 transition focus:outline-none focus-visible:ring-2"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -134,7 +137,7 @@ export function AdvancedFiltersSheet({
           <div>
             <label
               htmlFor="adv-search"
-              className="block text-sm font-medium text-brand-900"
+              className="text-brand-900 block text-sm font-medium"
             >
               Search
             </label>
@@ -153,7 +156,7 @@ export function AdvancedFiltersSheet({
             <div>
               <label
                 htmlFor="adv-dateFrom"
-                className="block text-sm font-medium text-brand-900"
+                className="text-brand-900 block text-sm font-medium"
               >
                 From
               </label>
@@ -170,7 +173,7 @@ export function AdvancedFiltersSheet({
             <div>
               <label
                 htmlFor="adv-dateTo"
-                className="block text-sm font-medium text-brand-900"
+                className="text-brand-900 block text-sm font-medium"
               >
                 To
               </label>
@@ -190,7 +193,7 @@ export function AdvancedFiltersSheet({
             <div>
               <label
                 htmlFor="adv-min"
-                className="block text-sm font-medium text-brand-900"
+                className="text-brand-900 block text-sm font-medium"
               >
                 Min amount
               </label>
@@ -215,7 +218,7 @@ export function AdvancedFiltersSheet({
             <div>
               <label
                 htmlFor="adv-max"
-                className="block text-sm font-medium text-brand-900"
+                className="text-brand-900 block text-sm font-medium"
               >
                 Max amount
               </label>
@@ -240,7 +243,7 @@ export function AdvancedFiltersSheet({
           </div>
 
           <div>
-            <p className="text-sm font-medium text-brand-900">Categories</p>
+            <p className="text-brand-900 text-sm font-medium">Categories</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {EXPENSE_CATEGORIES.map((category) => {
                 const active = selectedCategories.has(category);
@@ -251,10 +254,10 @@ export function AdvancedFiltersSheet({
                     onClick={() => toggleCategory(category)}
                     aria-pressed={active}
                     className={cn(
-                      "rounded-full border px-3 py-1 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400",
+                      "focus-visible:ring-brand-400 rounded-full border px-3 py-1 text-xs font-medium transition focus:outline-none focus-visible:ring-2",
                       active
                         ? "border-brand-500 bg-brand-500 text-white"
-                        : "border-brand-200 bg-white text-brand-800 hover:border-brand-300 hover:bg-brand-50",
+                        : "border-brand-200 text-brand-800 hover:border-brand-300 hover:bg-brand-50 bg-white",
                     )}
                   >
                     {category}
@@ -265,19 +268,19 @@ export function AdvancedFiltersSheet({
           </div>
         </div>
 
-        <footer className="flex items-center justify-between border-t border-brand-100 px-5 py-4">
+        <footer className="border-brand-100 flex items-center justify-between border-t px-5 py-4">
           <button
             type="button"
             onClick={clearFilters}
             disabled={activeCount === 0}
-            className="rounded-lg px-3 py-1.5 text-sm font-semibold text-brand-700 transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+            className="text-brand-700 rounded-lg px-3 py-1.5 text-sm font-semibold transition hover:underline disabled:cursor-not-allowed disabled:opacity-40"
           >
             Clear all
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+            className="bg-brand-500 hover:bg-brand-600 focus-visible:ring-brand-400 rounded-lg px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition focus:outline-none focus-visible:ring-2"
           >
             Done
           </button>

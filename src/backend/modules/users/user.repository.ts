@@ -1,5 +1,7 @@
 import { ObjectId, type Collection } from "mongodb";
 import { getDb } from "@backend/config/mongodb";
+import { toObjectId, timestamps } from "@backend/db/utils";
+import { normalizeEmail } from "@shared/auth/normalize";
 
 /**
  * Pido-managed user fields layered on top of Auth.js's `users` collection.
@@ -41,27 +43,26 @@ export interface CreateCredentialsUserInput {
 export const userRepository = {
   async findByEmail(email: string): Promise<UserDocument | null> {
     const collection = await getCollection();
-    return collection.findOne({ email: email.toLowerCase().trim() });
+    return collection.findOne({ email: normalizeEmail(email) });
   },
 
   async findById(id: string): Promise<UserDocument | null> {
-    if (!ObjectId.isValid(id)) return null;
+    const oid = toObjectId(id);
+    if (!oid) return null;
     const collection = await getCollection();
-    return collection.findOne({ _id: new ObjectId(id) });
+    return collection.findOne({ _id: oid });
   },
 
   async createCredentialsUser(input: CreateCredentialsUserInput): Promise<UserDocument> {
     const collection = await getCollection();
-    const now = new Date();
     const doc: Omit<UserDocument, "_id"> = {
-      email: input.email.toLowerCase().trim(),
+      email: normalizeEmail(input.email),
       name: input.name,
       passwordHash: input.passwordHash,
       emailVerified: null,
       image: null,
       activeFamilyId: null,
-      createdAt: now,
-      updatedAt: now,
+      ...timestamps(),
     };
     const result = await collection.insertOne(doc as UserDocument);
     return { _id: result.insertedId, ...doc };
@@ -72,10 +73,11 @@ export const userRepository = {
    * user is removed from their currently-active family).
    */
   async setActiveFamily(userId: string, familyId: string | null): Promise<void> {
-    if (!ObjectId.isValid(userId)) return;
+    const oid = toObjectId(userId);
+    if (!oid) return;
     const collection = await getCollection();
     await collection.updateOne(
-      { _id: new ObjectId(userId) },
+      { _id: oid },
       { $set: { activeFamilyId: familyId, updatedAt: new Date() } },
     );
   },
@@ -86,10 +88,11 @@ export const userRepository = {
    * roster rows.
    */
   async updateName(userId: string, name: string): Promise<UserDocument | null> {
-    if (!ObjectId.isValid(userId)) return null;
+    const oid = toObjectId(userId);
+    if (!oid) return null;
     const collection = await getCollection();
     const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(userId) },
+      { _id: oid },
       { $set: { name, updatedAt: new Date() } },
       { returnDocument: "after" },
     );
@@ -101,9 +104,10 @@ export const userRepository = {
    * (memberships, owned families, etc.) BEFORE calling this.
    */
   async deleteById(userId: string): Promise<boolean> {
-    if (!ObjectId.isValid(userId)) return false;
+    const oid = toObjectId(userId);
+    if (!oid) return false;
     const collection = await getCollection();
-    const result = await collection.deleteOne({ _id: new ObjectId(userId) });
+    const result = await collection.deleteOne({ _id: oid });
     return result.deletedCount === 1;
   },
 
@@ -116,12 +120,12 @@ export const userRepository = {
   async purgeAuthArtifacts(
     userId: string,
   ): Promise<{ accounts: number; sessions: number }> {
-    if (!ObjectId.isValid(userId)) return { accounts: 0, sessions: 0 };
+    const oid = toObjectId(userId);
+    if (!oid) return { accounts: 0, sessions: 0 };
     const db = await getDb();
-    const objectId = new ObjectId(userId);
     const [accountsResult, sessionsResult] = await Promise.all([
-      db.collection("accounts").deleteMany({ userId: objectId }),
-      db.collection("sessions").deleteMany({ userId: objectId }),
+      db.collection("accounts").deleteMany({ userId: oid }),
+      db.collection("sessions").deleteMany({ userId: oid }),
     ]);
     return {
       accounts: accountsResult.deletedCount ?? 0,

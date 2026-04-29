@@ -20,6 +20,8 @@ import type {
   FamilyRole,
   InvitePreview,
 } from "@shared/families/schemas";
+import { STALE } from "@frontend/lib/queryConstants";
+import { toastError } from "@frontend/lib/toast-error";
 
 export const familyKeys = {
   all: ["families"] as const,
@@ -33,7 +35,7 @@ export function useFamilies(): UseQueryResult<FamilyListResponse, Error> {
   return useQuery({
     queryKey: familyKeys.list(),
     queryFn: () => familiesApi.list(),
-    staleTime: 30_000,
+    staleTime: STALE.DEFAULT,
   });
 }
 
@@ -44,7 +46,7 @@ export function useFamilyMembers(
     queryKey: familyId ? familyKeys.members(familyId) : ["families", "members", "off"],
     queryFn: () => familiesApi.listMembers(familyId as string),
     enabled: Boolean(familyId),
-    staleTime: 15_000,
+    staleTime: STALE.FAST,
   });
 }
 
@@ -55,7 +57,7 @@ export function useFamilyInvites(
     queryKey: familyId ? familyKeys.invites(familyId) : ["families", "invites", "off"],
     queryFn: () => familiesApi.listInvites(familyId as string),
     enabled: Boolean(familyId),
-    staleTime: 15_000,
+    staleTime: STALE.FAST,
   });
 }
 
@@ -64,7 +66,7 @@ export function useInvitePreview(token: string): UseQueryResult<InvitePreview, E
     queryKey: familyKeys.preview(token),
     queryFn: () => invitesApi.preview(token),
     retry: false,
-    staleTime: 60_000,
+    staleTime: STALE.LONG,
   });
 }
 
@@ -76,7 +78,7 @@ function useSessionAndCacheRefresh() {
   const { update } = useSession();
   const queryClient = useQueryClient();
   return async () => {
-    await update();
+    await update({});
     await queryClient.invalidateQueries();
   };
 }
@@ -109,6 +111,7 @@ export function useSetActiveFamily() {
     onSuccess: async () => {
       await refresh();
     },
+    onError: (error) => toastError(error, "Could not switch workspace"),
   });
 }
 

@@ -21,7 +21,7 @@ export const newExpenseSchema = z.object({
   category: expenseCategorySchema,
   date: isoDateSchema,
   amount: z
-    .number({ invalid_type_error: "Amount must be a number" })
+    .number({ error: "Amount must be a number" })
     .positive("Amount must be greater than 0")
     .max(1_000_000_000, "Amount is too large"),
   note: z
