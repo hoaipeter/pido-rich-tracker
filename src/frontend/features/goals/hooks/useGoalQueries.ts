@@ -3,6 +3,7 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { goalsApi } from "../api-client";
 import type { Goal, GoalContribution } from "@shared/goals/schemas";
+import { STALE } from "@frontend/lib/queryConstants";
 
 export const goalKeys = {
   all: ["goals"] as const,
@@ -15,7 +16,7 @@ export function useGoals(): UseQueryResult<Goal[], Error> {
   return useQuery({
     queryKey: goalKeys.list(),
     queryFn: () => goalsApi.list(),
-    staleTime: 30_000,
+    staleTime: STALE.DEFAULT,
   });
 }
 
@@ -25,7 +26,7 @@ export function useGoalContributions(
   return useQuery({
     queryKey: goalKeys.contributions(goalId),
     queryFn: () => goalsApi.listContributions(goalId),
-    staleTime: 30_000,
+    staleTime: STALE.DEFAULT,
     enabled: Boolean(goalId),
   });
 }
@@ -34,6 +35,6 @@ export function useAllGoalContributions(): UseQueryResult<GoalContribution[], Er
   return useQuery({
     queryKey: goalKeys.contributions(),
     queryFn: () => goalsApi.listAllContributions(),
-    staleTime: 30_000,
+    staleTime: STALE.DEFAULT,
   });
 }

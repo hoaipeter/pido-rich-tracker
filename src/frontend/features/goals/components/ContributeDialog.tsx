@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Spinner } from "@frontend/components/ui/Spinner";
 import {
   newGoalContributionSchema,
@@ -33,7 +34,7 @@ export function ContributeDialog({ goalId, goalName, open, onClose }: Props) {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<NewGoalContribution>({
+  } = useForm<z.input<typeof newGoalContributionSchema>, unknown, NewGoalContribution>({
     resolver: zodResolver(newGoalContributionSchema),
     defaultValues: {
       amount: undefined as unknown as number,
@@ -43,6 +44,7 @@ export function ContributeDialog({ goalId, goalName, open, onClose }: Props) {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(open);
     if (open) {
       reset({
@@ -86,19 +88,19 @@ export function ContributeDialog({ goalId, goalName, open, onClose }: Props) {
       className="fixed inset-0 z-40 flex items-center justify-center px-4"
     >
       <div
-        className="absolute inset-0 bg-brand-900/30 backdrop-blur-sm"
+        className="bg-brand-900/30 absolute inset-0 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
       <div className="relative z-10 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-semibold text-brand-800">Log contribution</h2>
-        <p className="mt-1 text-sm text-brand-600">to {goalName}</p>
+        <h2 className="text-brand-800 text-lg font-semibold">Log contribution</h2>
+        <p className="text-brand-600 mt-1 text-sm">to {goalName}</p>
 
         <form onSubmit={onSubmit} noValidate className="mt-4 grid gap-3">
           <div>
             <label
               htmlFor="amount"
-              className="block text-sm font-semibold text-brand-800"
+              className="text-brand-800 block text-sm font-semibold"
             >
               Amount
             </label>
@@ -122,13 +124,13 @@ export function ContributeDialog({ goalId, goalName, open, onClose }: Props) {
             )}
           </div>
           <div>
-            <label htmlFor="date" className="block text-sm font-semibold text-brand-800">
+            <label htmlFor="date" className="text-brand-800 block text-sm font-semibold">
               Date
             </label>
             <input id="date" type="date" className={fieldClass} {...register("date")} />
           </div>
           <div>
-            <label htmlFor="note" className="block text-sm font-semibold text-brand-800">
+            <label htmlFor="note" className="text-brand-800 block text-sm font-semibold">
               Note <span className="text-brand-400">(optional)</span>
             </label>
             <input
@@ -144,14 +146,14 @@ export function ContributeDialog({ goalId, goalName, open, onClose }: Props) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-brand-700 transition hover:bg-brand-50"
+              className="text-brand-700 hover:bg-brand-50 rounded-lg px-4 py-2 text-sm font-medium transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting || addContribution.isPending}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-brand-400 via-brand-500 to-brand-600 px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
+              className="from-brand-400 via-brand-500 to-brand-600 inline-flex items-center gap-2 rounded-lg bg-gradient-to-br px-4 py-2 text-sm font-semibold text-white shadow transition hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
             >
               {(isSubmitting || addContribution.isPending) && (
                 <Spinner className="text-white" />

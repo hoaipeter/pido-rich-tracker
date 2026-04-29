@@ -37,7 +37,7 @@ export function DailySpendingChart({ data }: Props) {
   }));
 
   return (
-    <div className="h-72 w-full animate-fade-in">
+    <div className="animate-fade-in h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
@@ -78,11 +78,11 @@ export function DailySpendingChart({ data }: Props) {
             tick={{ fill: "#763850", fontSize: 11 }}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [
-              formatCurrency(value),
+            formatter={(value, name) => [
+              formatCurrency(typeof value === "number" ? value : Number(value)),
               name === "cumulative" ? "Cumulative" : "Daily",
             ]}
-            labelFormatter={(label: number) => `Day ${label}`}
+            labelFormatter={(label) => `Day ${label}`}
             cursor={{
               stroke: "#df7396",
               strokeOpacity: 0.4,

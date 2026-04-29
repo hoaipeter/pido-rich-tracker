@@ -10,6 +10,7 @@ import type {
   UpdateSavingsGoal,
 } from "@shared/goals/schemas";
 import { goalKeys } from "./useGoalQueries";
+import { toastError } from "@frontend/lib/toast-error";
 
 export function useCreateGoal() {
   const queryClient = useQueryClient();
@@ -19,7 +20,7 @@ export function useCreateGoal() {
       queryClient.invalidateQueries({ queryKey: goalKeys.all });
       toast.success(`Created ${goal.kind === "savings" ? "savings goal" : "budget"}`);
     },
-    onError: (error: Error) => toast.error(error.message || "Could not create goal"),
+    onError: (error: Error) => toastError(error, "Could not create goal"),
   });
 }
 
@@ -37,7 +38,7 @@ export function useUpdateGoal() {
       queryClient.invalidateQueries({ queryKey: goalKeys.all });
       toast.success("Goal updated");
     },
-    onError: (error: Error) => toast.error(error.message || "Could not update goal"),
+    onError: (error: Error) => toastError(error, "Could not update goal"),
   });
 }
 
@@ -49,7 +50,7 @@ export function useDeleteGoal() {
       queryClient.invalidateQueries({ queryKey: goalKeys.all });
       toast.success("Goal deleted");
     },
-    onError: (error: Error) => toast.error(error.message || "Could not delete goal"),
+    onError: (error: Error) => toastError(error, "Could not delete goal"),
   });
 }
 
@@ -64,6 +65,6 @@ export function useAddContribution(goalId: string) {
       queryClient.invalidateQueries({ queryKey: goalKeys.list() });
       toast.success("Contribution logged");
     },
-    onError: (error: Error) => toast.error(error.message || "Could not log contribution"),
+    onError: (error: Error) => toastError(error, "Could not log contribution"),
   });
 }

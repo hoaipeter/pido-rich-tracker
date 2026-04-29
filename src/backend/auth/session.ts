@@ -1,6 +1,7 @@
 import { auth } from "./auth";
 import { familyRepository } from "@backend/modules/families/family.repository";
 import { familyMemberRepository } from "@backend/modules/families/familyMember.repository";
+import { userRepository } from "@backend/modules/users/user.repository";
 import { FamilyError } from "@backend/modules/families/errors";
 import type { FamilyRole } from "@shared/families/schemas";
 
@@ -36,6 +37,11 @@ export interface CurrentFamilyContext {
  * MUST go through this (or `getCurrentFamilyId`). Re-validates live
  * membership on each call — removed members are rejected even with a
  * still-valid cookie. Edge middleware can't do this (no Mongo).
+ *
+ * activeFamilyId is read from the user document (DB) rather than the JWT
+ * so that workspace switches (PATCH /api/families/active) take effect
+ * immediately on the next request, without waiting for session.update()
+ * to refresh the JWT cookie.
  */
 export async function getCurrentFamilyContext(): Promise<CurrentFamilyContext> {
   const session = await auth();
@@ -43,15 +49,15 @@ export async function getCurrentFamilyContext(): Promise<CurrentFamilyContext> {
   if (!user?.id) {
     throw new UnauthorizedError();
   }
-  const familyId = user.activeFamilyId;
+
+  const userDoc = await userRepository.findById(user.id);
+  const familyId = userDoc?.activeFamilyId || user.activeFamilyId;
+
   if (!familyId) {
-    // Cookie is valid but the token has no active family — force re-login
-    // so the jwt callback can rebuild the workspace pointer.
     throw new UnauthorizedError("No active family in session.");
   }
 
-  // Live revocation gate: the membership lookup IS the check. A removed
-  // member sees `membership === null` regardless of JWT freshness.
+  // Live revocation gate: the membership lookup IS the check.
   const [family, membership] = await Promise.all([
     familyRepository.findById(familyId),
     familyMemberRepository.getMembership(familyId, user.id),

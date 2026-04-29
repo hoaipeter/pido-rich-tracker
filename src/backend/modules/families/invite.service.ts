@@ -1,4 +1,5 @@
 import type { FamilyInvite, InvitePreview } from "@shared/families/schemas";
+import { normalizeEmail } from "@shared/auth/normalize";
 import { generateInviteToken, hashInviteToken } from "@backend/auth/token";
 import { familyRepository } from "./family.repository";
 import { familyMemberRepository } from "./familyMember.repository";
@@ -11,10 +12,6 @@ const INVITE_TTL_DAYS = 7;
 
 function expiresIn(days: number): Date {
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-}
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
 }
 
 export interface CreateInviteResult {

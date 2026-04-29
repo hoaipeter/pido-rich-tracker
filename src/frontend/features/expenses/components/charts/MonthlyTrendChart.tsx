@@ -39,7 +39,7 @@ export function MonthlyTrendChart({ data }: Props) {
   }));
 
   return (
-    <div className="h-72 w-full animate-fade-in">
+    <div className="animate-fade-in h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
@@ -67,7 +67,10 @@ export function MonthlyTrendChart({ data }: Props) {
             tick={{ fill: "#763850", fontSize: 11 }}
           />
           <Tooltip
-            formatter={(value: number) => [formatCurrency(value), "Total"]}
+            formatter={(value) => [
+              formatCurrency(typeof value === "number" ? value : Number(value)),
+              "Total",
+            ]}
             cursor={{ fill: "rgb(223 115 150 / 0.10)" }}
           />
           <Bar

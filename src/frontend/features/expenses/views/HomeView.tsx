@@ -29,6 +29,7 @@ export function HomeView() {
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedMonth(currentMonthKey());
   }, []);
 
@@ -70,13 +71,13 @@ export function HomeView() {
     <div className="space-y-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-500/80">
+          <p className="text-brand-500/80 text-[11px] font-semibold tracking-[0.22em] uppercase">
             Pido dashboard
           </p>
-          <h1 className="mt-1 bg-gradient-to-r from-brand-700 via-brand-500 to-cream-600 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent sm:text-4xl">
+          <h1 className="from-brand-700 via-brand-500 to-cream-600 mt-1 bg-gradient-to-r bg-clip-text text-3xl font-extrabold tracking-tight text-transparent sm:text-4xl">
             Welcome back
           </h1>
-          <p className="mt-1 text-sm text-brand-700/70">
+          <p className="text-brand-700/70 mt-1 text-sm">
             A cozy view of where your money is going this month.
           </p>
         </div>

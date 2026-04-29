@@ -1,5 +1,6 @@
 import { ObjectId, type Collection } from "mongodb";
 import { getDb } from "@backend/config/mongodb";
+import { toObjectId, timestamps } from "@backend/db/utils";
 import type {
   BudgetGoal,
   Goal,
@@ -100,15 +101,15 @@ export const goalRepository = {
   },
 
   async get(familyId: string, id: string): Promise<Goal | null> {
-    if (!ObjectId.isValid(id)) return null;
+    const oid = toObjectId(id);
+    if (!oid) return null;
     const collection = await getCollection();
-    const doc = await collection.findOne({ _id: new ObjectId(id), familyId });
+    const doc = await collection.findOne({ _id: oid, familyId });
     return doc ? toGoal(doc) : null;
   },
 
   async create(familyId: string, createdBy: string, input: NewGoal): Promise<Goal> {
     const collection = await getCollection();
-    const now = new Date();
     if (input.kind === "savings") {
       const doc: Omit<SavingsGoalDocument, "_id"> = {
         kind: "savings",
@@ -119,8 +120,7 @@ export const goalRepository = {
         targetAmount: input.targetAmount,
         targetDate: input.targetDate,
         startedAt: input.startedAt,
-        createdAt: now,
-        updatedAt: now,
+        ...timestamps(),
       };
       const result = await collection.insertOne(doc as GoalDocument);
       return toGoal({ ...doc, _id: result.insertedId });
@@ -135,8 +135,7 @@ export const goalRepository = {
       category: input.category,
       startMonth: input.startMonth,
       endMonth: input.endMonth ?? null,
-      createdAt: now,
-      updatedAt: now,
+      ...timestamps(),
     };
     const result = await collection.insertOne(doc as GoalDocument);
     return toGoal({ ...doc, _id: result.insertedId });
@@ -148,14 +147,15 @@ export const goalRepository = {
     kind: "savings" | "budget",
     patch: UpdateSavingsGoal | UpdateBudgetGoal,
   ): Promise<Goal | null> {
-    if (!ObjectId.isValid(id)) return null;
+    const oid = toObjectId(id);
+    if (!oid) return null;
     const collection = await getCollection();
     const $set: Record<string, unknown> = { updatedAt: new Date() };
     for (const [key, value] of Object.entries(patch)) {
       if (value !== undefined) $set[key] = value;
     }
     const result = await collection.findOneAndUpdate(
-      { _id: new ObjectId(id), familyId, kind },
+      { _id: oid, familyId, kind },
       { $set },
       { returnDocument: "after" },
     );
@@ -163,12 +163,10 @@ export const goalRepository = {
   },
 
   async delete(familyId: string, id: string): Promise<boolean> {
-    if (!ObjectId.isValid(id)) return false;
+    const oid = toObjectId(id);
+    if (!oid) return false;
     const collection = await getCollection();
-    const result = await collection.deleteOne({
-      _id: new ObjectId(id),
-      familyId,
-    });
+    const result = await collection.deleteOne({ _id: oid, familyId });
     return result.deletedCount === 1;
   },
 

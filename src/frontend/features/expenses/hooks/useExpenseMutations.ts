@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { expensesApi } from "../api-client";
 import type { Expense, NewExpense } from "@shared/expenses/schemas";
 import { expenseKeys } from "./useExpenseQueries";
+import { toastError } from "@frontend/lib/toast-error";
 
 export function useCreateExpense() {
   const queryClient = useQueryClient();
@@ -18,7 +19,7 @@ export function useCreateExpense() {
       toast.success(`Added ${created.category} expense`);
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Could not add expense");
+      toastError(error, "Could not add expense");
     },
   });
 }
@@ -51,7 +52,7 @@ export function useDeleteExpense() {
           queryClient.setQueryData(key, value);
         }
       }
-      toast.error(error.message || "Could not delete expense");
+      toastError(error, "Could not delete expense");
     },
     onSuccess: () => {
       toast.success("Expense deleted");
@@ -74,7 +75,7 @@ export function useBulkCreateExpenses() {
       );
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Import failed");
+      toastError(error, "Import failed");
     },
   });
 }

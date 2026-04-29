@@ -1,5 +1,6 @@
 import { ObjectId, type Collection } from "mongodb";
 import { getDb } from "@backend/config/mongodb";
+import { toObjectId } from "@backend/db/utils";
 import type { GoalContribution, NewGoalContribution } from "@shared/goals/schemas";
 
 interface ContributionDocument {
@@ -45,10 +46,11 @@ function toContribution(doc: ContributionDocument): GoalContribution {
 
 export const goalContributionRepository = {
   async listForGoal(familyId: string, goalId: string): Promise<GoalContribution[]> {
-    if (!ObjectId.isValid(goalId)) return [];
+    const oid = toObjectId(goalId);
+    if (!oid) return [];
     const collection = await getCollection();
     const docs = await collection
-      .find({ familyId, goalId: new ObjectId(goalId) })
+      .find({ familyId, goalId: oid })
       .sort({ date: -1, _id: -1 })
       .limit(1000)
       .toArray();
@@ -71,39 +73,35 @@ export const goalContributionRepository = {
     goalId: string,
     input: NewGoalContribution,
   ): Promise<GoalContribution | null> {
-    if (!ObjectId.isValid(goalId)) return null;
+    const goalOid = toObjectId(goalId);
+    if (!goalOid) return null;
     const collection = await getCollection();
-    const now = new Date();
     const doc: Omit<ContributionDocument, "_id"> = {
       familyId,
       createdBy,
-      goalId: new ObjectId(goalId),
+      goalId: goalOid,
       amount: input.amount,
       date: input.date,
       note: input.note ?? null,
-      createdAt: now,
+      createdAt: new Date(),
     };
     const result = await collection.insertOne(doc as ContributionDocument);
     return toContribution({ ...doc, _id: result.insertedId });
   },
 
   async deleteForGoal(familyId: string, goalId: string): Promise<number> {
-    if (!ObjectId.isValid(goalId)) return 0;
+    const oid = toObjectId(goalId);
+    if (!oid) return 0;
     const collection = await getCollection();
-    const result = await collection.deleteMany({
-      familyId,
-      goalId: new ObjectId(goalId),
-    });
+    const result = await collection.deleteMany({ familyId, goalId: oid });
     return result.deletedCount ?? 0;
   },
 
   async delete(familyId: string, id: string): Promise<boolean> {
-    if (!ObjectId.isValid(id)) return false;
+    const oid = toObjectId(id);
+    if (!oid) return false;
     const collection = await getCollection();
-    const result = await collection.deleteOne({
-      _id: new ObjectId(id),
-      familyId,
-    });
+    const result = await collection.deleteOne({ _id: oid, familyId });
     return result.deletedCount === 1;
   },
 

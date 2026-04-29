@@ -1,6 +1,124 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* ── Brand theme ─────────────────────────────────────────────────────────
+ * Pido (Pig + Dog) — pink pastel theme.
+ * `brand` is the primary accent; `emerald` is remapped so every existing
+ * emerald-* class adopts the brand palette without class-name churn.
+ * `cream` is the warm secondary tone.
+ * ────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* brand */
+  --color-brand-50: #fff7fa;
+  --color-brand-100: #fdebf2;
+  --color-brand-200: #fad4e1;
+  --color-brand-300: #f5b3ca;
+  --color-brand-400: #ec8eae;
+  --color-brand-500: #df7396;
+  --color-brand-600: #c25c7d;
+  --color-brand-700: #9c4865;
+  --color-brand-800: #763850;
+  --color-brand-900: #5a2c3e;
+  --color-brand-950: #3a1c28;
+
+  /* emerald → brand remap (keeps existing emerald-* classes working) */
+  --color-emerald-50: #fff7fa;
+  --color-emerald-100: #fdebf2;
+  --color-emerald-200: #fad4e1;
+  --color-emerald-300: #f5b3ca;
+  --color-emerald-400: #ec8eae;
+  --color-emerald-500: #df7396;
+  --color-emerald-600: #c25c7d;
+  --color-emerald-700: #9c4865;
+  --color-emerald-800: #763850;
+  --color-emerald-900: #5a2c3e;
+  --color-emerald-950: #3a1c28;
+
+  /* cream */
+  --color-cream-50: #fffaf5;
+  --color-cream-100: #fdf2e7;
+  --color-cream-200: #f8e2cb;
+  --color-cream-300: #efc9a5;
+  --color-cream-400: #dfac7e;
+  --color-cream-500: #c89066;
+  --color-cream-600: #a8744e;
+  --color-cream-700: #825a3d;
+  --color-cream-800: #5e4129;
+  --color-cream-900: #3f2c1c;
+
+  /* background images */
+  --background-image-brand-gradient: linear-gradient(
+    135deg,
+    #fde6ee 0%,
+    #fdebf2 45%,
+    #fdf2e7 100%
+  );
+
+  /* animations */
+  --animate-fade-in: fade-in 200ms ease-out;
+  --animate-wiggle: wiggle 700ms ease-in-out;
+  --animate-bounce-soft: bounce-soft 1.1s infinite;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-4deg);
+    }
+    50% {
+      transform: rotate(4deg);
+    }
+  }
+  @keyframes bounce-soft {
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+      animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+    }
+    50% {
+      transform: translateY(-12px) scale(1.05);
+      animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  @keyframes pulse-ring {
+    0% {
+      transform: scale(0.85);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      background-position: -400px 0;
+    }
+    100% {
+      background-position: 400px 0;
+    }
+  }
+}
 
 :root {
   color-scheme: light;

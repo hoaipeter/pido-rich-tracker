@@ -28,7 +28,7 @@ export const newSavingsGoalSchema = z.object({
   kind: z.literal("savings"),
   ...baseFields,
   targetAmount: z
-    .number({ invalid_type_error: "Target amount must be a number" })
+    .number({ error: "Target amount must be a number" })
     .positive("Target amount must be greater than 0")
     .max(1_000_000_000),
   targetDate: isoDateSchema,
@@ -40,7 +40,7 @@ export const newBudgetGoalSchema = z.object({
   kind: z.literal("budget"),
   ...baseFields,
   monthlyLimit: z
-    .number({ invalid_type_error: "Monthly limit must be a number" })
+    .number({ error: "Monthly limit must be a number" })
     .positive("Monthly limit must be greater than 0")
     .max(1_000_000_000),
   category: expenseCategorySchema,
@@ -82,7 +82,7 @@ export type UpdateBudgetGoal = z.infer<typeof updateBudgetGoalSchema>;
 /** Logged additions to a savings goal — separate collection for cheap history reads. */
 export const newGoalContributionSchema = z.object({
   amount: z
-    .number({ invalid_type_error: "Amount must be a number" })
+    .number({ error: "Amount must be a number" })
     .positive("Amount must be greater than 0")
     .max(1_000_000_000),
   date: isoDateSchema,
